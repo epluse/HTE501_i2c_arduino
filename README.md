@@ -32,7 +32,7 @@
 
 ### I2C addresse 
 The sensor‘s I2C base address is 0x40 (without R/W bit). Pins A1...A3 overrule the I2C base address.(for more information check the data sheet) <br>
-To make it easier to find a HTE501 and its I2C address, there is a function contained in this library called "findSensor". <br>
+To make it easier to find the I2C address, there is a function contained in this library called "findSensor". <br>
 ### No matching I2C addresse
 You have two ways to match the I2C addresses. The first would be to call the library in the Arduino file with the correct address. Or you can change the connections to the pins A1 to A3.
 <br> 
