@@ -1,0 +1,40 @@
+#######################################
+# Syntax Coloring Map For HTE501_i2c
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+hte501I2c	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+singleShotTempHum			KEYWORD2
+getPeriodicMeasurmentTempHum		KEYWORD2
+getDewpoint				KEYWORD2
+findSensor				KEYWORD2
+changePeriodicMeasurmentTime		KEYWORD2
+readPeriodicMeasurmentTime		KEYWORD2
+changeHeaterCurrent			KEYWORD2
+readHeaterCurrent			KEYWORD2
+changeMeasurmentResolution		KEYWORD2
+readMeasurmentResolution		KEYWORD2
+startPeriodicMeasurment			KEYWORD2
+endPeriodicMeasurment			KEYWORD2
+heaterOn				KEYWORD2
+heaterOff				KEYWORD2
+readIdentification			KEYWORD2
+newMeasurmentReady			KEYWORD2
+constantHeaterOnOff			KEYWORD2
+clearStatusregister1			KEYWORD2
+reset					KEYWORD2
+getErrorString				KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+CRC8_ONEWIRE_POLY	LITERAL1
+CRC8_ONEWIRE_START	LITERAL1
