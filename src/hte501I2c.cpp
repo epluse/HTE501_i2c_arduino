@@ -76,17 +76,25 @@ uint8_t hte501I2c::getPeriodicMeasurmentTempHum(float &temperature, float &humid
 uint8_t hte501I2c::getDewpoint(float &dewpoint)
 {
   unsigned char i2cResponse[3];
-  unsigned char Command[] = {0xE0, 0x16};
+  unsigned char Command[] = {0xE0,0x16};
   wireWrite(Command, 1, false);
-  wireRead(i2cResponse, 3);
-  if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1))
+  wireRead(i2cResponse, 3); 
+  if(i2cResponse[2] == calcCrc8(i2cResponse, 0, 1))
   {
-    dewpoint = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]) / 100;
-    return 0;
+	dewpoint = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]);
+  if (dewpoint>55536)
+  {
+    dewpoint = (dewpoint - 65536)/100; 
+  }
+  else 
+  {
+    dewpoint = dewpoint / 100;
+  }
+	return 0;
   }
   else
   {
-    return 1;
+	return 1;
   }
 }
 
