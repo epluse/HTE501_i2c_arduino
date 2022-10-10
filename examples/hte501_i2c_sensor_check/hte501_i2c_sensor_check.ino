@@ -82,6 +82,7 @@ void setup()
     Serial.print("Identificationnumber: ");
     for(int i = 0; i < 8; i++)
     {
+      Serial.print(identification[i] < 16 ? "0" : "");
       Serial.print(identification[i],HEX);
     }
   }

@@ -4,7 +4,7 @@
 /*
 Read functions for measurement values of the HTE501 Sensor via I2C interface.
 
-Copyright 2021 E+E Elektronik Ges.m.b.H.
+Copyright 2022 E+E Elektronik Ges.m.b.H.
 
 Disclaimer:
 This application example is non-binding and does not claim to be complete with regard
@@ -33,17 +33,6 @@ We assume no liability for the information contained in this document.
 #define CRC8_ONEWIRE_POLY 0x31
 #define CRC8_ONEWIRE_START 0xFF
 
-enum Errorcode
-{
-    OKAY = 0,
-    ERR_CKSUM = 1,
-    CON_OK = 2,
-    NO_SENSOR_ON_ADDR = 3,
-    NO_SENSOR = 4,
-    SEC_TO_HIGH = 5,
-    CUR_NOT_IN_SPEC = 6,
-    MEAS_RES_WRONG = 7
-};
 
 // declaration of functions
 //-----------------------------------------------------------------------------
@@ -54,21 +43,21 @@ public:
     hte501I2c(void);
     hte501I2c(unsigned char i2cAdress);
     uint8_t singleShotTempHum(float &temperature, float &humidity);
-    uint8_t getPeriodicMeasurmentTempHum(float &temperature, float &humidity);
+    uint8_t getPeriodicMeasurementTempHum(float &temperature, float &humidity);
     uint8_t getDewpoint(float &dewpoint);
     uint8_t findSensor(void);
-    uint8_t changePeriodicMeasurmentTime(uint32_t millisec);
-    void readPeriodicMeasurmentTime(float &periodicMeasurmentTime);
+    uint8_t changePeriodicMeasurementTime(uint32_t millisec);
+    void readPeriodicMeasurementTime(float &periodicMeasurementTime);
     uint8_t changeHeaterCurrent(int mA);
     void readHeaterCurrent(int &heaterCurrent);
-    uint8_t changeMeasurmentResolution(int measResTemp, int measResHum);
-    void readMeasurmentResolution(int &measResTemp, int &measResHum);
-    void startPeriodicMeasurment(void);
-    void endPeriodicMeasurment(void);
+    uint8_t changeMeasurementResolution(int measResTemp, int measResHum);
+    void readMeasurementResolution(int &measResTemp, int &measResHum);
+    void startPeriodicMeasurement(void);
+    void endPeriodicMeasurement(void);
     void heaterOn(void);
     void heaterOff(void);
     uint8_t readIdentification(unsigned char identification[]);
-    uint8_t newMeasurmentReady(bool &measurement);
+    uint8_t newMeasurementReady(bool &measurement);
     uint8_t constantHeaterOnOff(bool &conHeaterOnOff);
     void clearStatusregister1(void);
     void reset(void);

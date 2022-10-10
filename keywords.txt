@@ -13,21 +13,21 @@ hte501I2c	KEYWORD1
 #######################################
 
 singleShotTempHum			KEYWORD2
-getPeriodicMeasurmentTempHum		KEYWORD2
+getPeriodicMeasurementTempHum		KEYWORD2
 getDewpoint				KEYWORD2
 findSensor				KEYWORD2
-changePeriodicMeasurmentTime		KEYWORD2
-readPeriodicMeasurmentTime		KEYWORD2
+changePeriodicMeasurementTime		KEYWORD2
+readPeriodicMeasurementTime		KEYWORD2
 changeHeaterCurrent			KEYWORD2
 readHeaterCurrent			KEYWORD2
-changeMeasurmentResolution		KEYWORD2
-readMeasurmentResolution		KEYWORD2
-startPeriodicMeasurment			KEYWORD2
-endPeriodicMeasurment			KEYWORD2
+changeMeasurementResolution		KEYWORD2
+readMeasurementResolution		KEYWORD2
+startPeriodicMeasurement		KEYWORD2
+endPeriodicMeasurement			KEYWORD2
 heaterOn				KEYWORD2
 heaterOff				KEYWORD2
 readIdentification			KEYWORD2
-newMeasurmentReady			KEYWORD2
+newMeasurementReady			KEYWORD2
 constantHeaterOnOff			KEYWORD2
 clearStatusregister1			KEYWORD2
 reset					KEYWORD2

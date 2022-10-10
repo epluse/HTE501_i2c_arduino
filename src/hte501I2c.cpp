@@ -4,7 +4,7 @@
 /*
 Read functions for measurement values of the HTE501 Sensor via I2C interface.
 
-Copyright 2021 E+E Elektronik Ges.m.b.H.
+Copyright 2022 E+E Elektronik Ges.m.b.H.
 
 Disclaimer:
 This application example is non-binding and does not claim to be complete with regard
@@ -28,6 +28,20 @@ We assume no liability for the information contained in this document.
 #include <Arduino.h>
 #include "Wire.h"
 
+
+enum Errorcode
+{
+    OKAY = 0,
+    ERR_CKSUM = 1,
+    CON_OK = 2,
+    NO_SENSOR_ON_ADDR = 3,
+    NO_SENSOR = 4,
+    SEC_TO_HIGH = 5,
+    CUR_NOT_IN_SPEC = 6,
+    MEAS_RES_WRONG = 7
+};
+
+
 hte501I2c::hte501I2c(void)
 {
 }
@@ -41,11 +55,20 @@ uint8_t hte501I2c::singleShotTempHum(float &temperature, float &humidity)
 {
   unsigned char i2cResponse[6];
   unsigned char Command[] = {0x2C, 0x1B};
-  wireWrite(Command, 1, false);
+  wireWrite(Command, 1, true);
+  delay(2);
   wireRead(i2cResponse, 6);
   if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1) && i2cResponse[5] == calcCrc8(i2cResponse, 3, 4))
   {
-    temperature = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]) / 100;
+    temperature = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]);
+    if (temperature > 55536)
+    {
+      temperature = (temperature - 65536) / 100; 
+    }
+    else 
+    {
+      temperature = temperature / 100;
+    }
     humidity = ((float)(i2cResponse[3]) * 256 + i2cResponse[4]) / 100;
     return 0;
   }
@@ -55,7 +78,7 @@ uint8_t hte501I2c::singleShotTempHum(float &temperature, float &humidity)
   }
 }
 
-uint8_t hte501I2c::getPeriodicMeasurmentTempHum(float &temperature, float &humidity)
+uint8_t hte501I2c::getPeriodicMeasurementTempHum(float &temperature, float &humidity)
 {
   unsigned char i2cResponse[6];
   unsigned char Command[] = {0xE0, 0x00};
@@ -63,7 +86,16 @@ uint8_t hte501I2c::getPeriodicMeasurmentTempHum(float &temperature, float &humid
   wireRead(i2cResponse, 6);
   if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1) && i2cResponse[5] == calcCrc8(i2cResponse, 3, 4))
   {
-    temperature = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]) / 100;
+    temperature = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]);
+    if (temperature > 55536)
+    {
+      temperature = (temperature - 65536) / 100; 
+    }
+    else 
+    {
+      temperature = temperature / 100;
+    }
+    
     humidity = ((float)(i2cResponse[3]) * 256 + i2cResponse[4]) / 100;
     return 0;
   }
@@ -127,7 +159,7 @@ uint8_t hte501I2c::findSensor(void)
   }
 }
 
-uint8_t hte501I2c::changePeriodicMeasurmentTime(uint32_t millisec)
+uint8_t hte501I2c::changePeriodicMeasurementTime(uint32_t millisec)
 {
   unsigned char sendBytes[2];
   if (3276751 > millisec)
@@ -146,14 +178,14 @@ uint8_t hte501I2c::changePeriodicMeasurmentTime(uint32_t millisec)
   }
 }
 
-void hte501I2c::readPeriodicMeasurmentTime(float &periodicMeasurmentTime)
+void hte501I2c::readPeriodicMeasurementTime(float &periodicMeasurementTime)
 {
   unsigned char i2cResponse[3];
   unsigned char Command[] = {0x72, 0xA7, 0x10};
   wireWrite(Command, 2, false);
   wireRead(i2cResponse, 3);
   float value = i2cResponse[1] * 256 + i2cResponse[0];
-  periodicMeasurmentTime = value * 0.05;
+  periodicMeasurementTime = value * 0.05;
 }
 
 uint8_t hte501I2c::changeHeaterCurrent(int mA) //5mA - 80mA
@@ -186,12 +218,12 @@ void hte501I2c::readHeaterCurrent(int &heaterCurrent)
   heaterCurrent = (i2cResponse[0] + 1) * 5;
 }
 
-uint8_t hte501I2c::changeMeasurmentResolution(int measResTemp, int measResHum) //8 - 13 Bit
+uint8_t hte501I2c::changeMeasurementResolution(int measResTemp, int measResHum) //8 - 13 Bit
 {
 
   if (8 <= measResTemp <= 13 && 8 <= measResHum <= 14)
   {
-    unsigned char sendByte = ((measResTemp - 8) << 3) + (measResHum - 8);
+    unsigned char sendByte = ((measResHum - 8) << 3) + (measResTemp - 8);
     unsigned char crc8[] = {0x0F, sendByte};
     unsigned char Command[] = {0x72, 0xA7, 0x0F, sendByte, calcCrc8(crc8, 0, 1)};
     wireWrite(Command, 4, true);
@@ -203,7 +235,7 @@ uint8_t hte501I2c::changeMeasurmentResolution(int measResTemp, int measResHum) /
   }
 }
 
-void hte501I2c::readMeasurmentResolution(int &measResTemp, int &measResHum)
+void hte501I2c::readMeasurementResolution(int &measResTemp, int &measResHum)
 {
   unsigned char i2cResponse[2];
   unsigned char Command[] = {0x72, 0xA7, 0x0F};
@@ -218,13 +250,13 @@ void hte501I2c::readMeasurmentResolution(int &measResTemp, int &measResHum)
   measResTemp = i2cResponse[1] + 8;
 }
 
-void hte501I2c::startPeriodicMeasurment(void)
+void hte501I2c::startPeriodicMeasurement(void)
 {
   unsigned char Command[] = {0x20, 0x1E};
   wireWrite(Command, 1, true);
 }
 
-void hte501I2c::endPeriodicMeasurment(void)
+void hte501I2c::endPeriodicMeasurement(void)
 {
   unsigned char Command[] = {0x30, 0x93};
   wireWrite(Command, 1, true);
@@ -268,7 +300,7 @@ void hte501I2c::reset(void)
   wireWrite(Command, 1, true);
 }
 
-uint8_t hte501I2c::newMeasurmentReady(bool &measurement)
+uint8_t hte501I2c::newMeasurementReady(bool &measurement)
 {
   unsigned char i2cResponse[3];
   unsigned char Command[] = {0xF3, 0x52};
@@ -380,7 +412,7 @@ void hte501I2c::getErrorString(uint8_t Status, char errorString[])
     strcpy(errorString, "The milli Ampere are not in the specification 5-80 mA");
     break;
   case MEAS_RES_WRONG:
-    strcpy(errorString, "The Measurment Resolution are not in the specification 8-13 Bit");
+    strcpy(errorString, "The Measurement Resolution are not in the specification 8-13 Bit");
     break;
   default:
     strcpy(errorString, "unknown error");
