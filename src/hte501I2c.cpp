@@ -53,8 +53,8 @@ hte501I2c::hte501I2c(unsigned char i2cAdress)
 
 uint8_t hte501I2c::singleShotTempHum(float &temperature, float &humidity)
 {
-  unsigned char i2cResponse[6];
-  unsigned char Command[] = {0x2C, 0x1B};
+  unsigned char i2cResponse[6] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_SINGLE_SHOT >> 8), (HTE501_COMMAND_READ_SINGLE_SHOT & 0xFF)};
   wireWrite(Command, 1, true);
   delay(2);
   wireRead(i2cResponse, 6);
@@ -80,8 +80,8 @@ uint8_t hte501I2c::singleShotTempHum(float &temperature, float &humidity)
 
 uint8_t hte501I2c::getPeriodicMeasurementTempHum(float &temperature, float &humidity)
 {
-  unsigned char i2cResponse[6];
-  unsigned char Command[] = {0xE0, 0x00};
+  unsigned char i2cResponse[6] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_PERIODIC_MEASUREMENT >> 8), (HTE501_COMMAND_READ_PERIODIC_MEASUREMENT & 0xFF)};
   wireWrite(Command, 1, false);
   wireRead(i2cResponse, 6);
   if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1) && i2cResponse[5] == calcCrc8(i2cResponse, 3, 4))
@@ -107,8 +107,8 @@ uint8_t hte501I2c::getPeriodicMeasurementTempHum(float &temperature, float &humi
 
 uint8_t hte501I2c::getDewpoint(float &dewpoint)
 {
-  unsigned char i2cResponse[3];
-  unsigned char Command[] = {0xE0,0x16};
+  unsigned char i2cResponse[3] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_DEW_POINT >> 8), (HTE501_COMMAND_READ_DEW_POINT & 0xFF)};
   wireWrite(Command, 1, false);
   wireRead(i2cResponse, 3); 
   if(i2cResponse[2] == calcCrc8(i2cResponse, 0, 1))
@@ -116,7 +116,7 @@ uint8_t hte501I2c::getDewpoint(float &dewpoint)
 	dewpoint = ((float)(i2cResponse[0]) * 256 + i2cResponse[1]);
   if (dewpoint>55536)
   {
-    dewpoint = (dewpoint - 65536)/100; 
+    dewpoint = (dewpoint - 65536)/100;
   }
   else 
   {
@@ -168,7 +168,7 @@ uint8_t hte501I2c::changePeriodicMeasurementTime(uint32_t millisec)
     sendBytes[1] = value / 255;
     sendBytes[0] = value % 256;
     unsigned char crc8[] = {0x10, sendBytes[0], sendBytes[1]};
-    unsigned char Command[] = {0x72, 0xA7, 0x10, sendBytes[0], sendBytes[1], calcCrc8(crc8, 0, 2)};
+    unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_PERIODIC_MEASUREMENT_TIME, sendBytes[0], sendBytes[1], calcCrc8(crc8, 0, 2)};
     wireWrite(Command, 5, true);
     return 0;
   }
@@ -180,8 +180,8 @@ uint8_t hte501I2c::changePeriodicMeasurementTime(uint32_t millisec)
 
 void hte501I2c::readPeriodicMeasurementTime(float &periodicMeasurementTime)
 {
-  unsigned char i2cResponse[3];
-  unsigned char Command[] = {0x72, 0xA7, 0x10};
+  unsigned char i2cResponse[3] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_PERIODIC_MEASUREMENT_TIME};
   wireWrite(Command, 2, false);
   wireRead(i2cResponse, 3);
   float value = i2cResponse[1] * 256 + i2cResponse[0];
@@ -191,13 +191,13 @@ void hte501I2c::readPeriodicMeasurementTime(float &periodicMeasurementTime)
 uint8_t hte501I2c::changeHeaterCurrent(int mA) //5mA - 80mA
 {
   unsigned char sendByte = 0x00;
-  if (5 <= mA <= 80)
+  if (5 <= mA && mA <= 80)
   {
     int value = (mA / 5) - 1;
     sendByte = value;
     sendByte = (sendByte << 3) + 7; // +7 because of Heater off
     unsigned char crc8[] = {0x08, sendByte};
-    unsigned char Command[] = {0x72, 0xA7, 0x08, sendByte, calcCrc8(crc8, 0, 1)};
+    unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_HEATER_CURRENT, sendByte, calcCrc8(crc8, 0, 1)};
     wireWrite(Command, 4, true);
     return 0;
   }
@@ -209,8 +209,8 @@ uint8_t hte501I2c::changeHeaterCurrent(int mA) //5mA - 80mA
 
 void hte501I2c::readHeaterCurrent(int &heaterCurrent)
 {
-  unsigned char i2cResponse[2];
-  unsigned char Command[] = {0x72, 0xA7, 0x08};
+  unsigned char i2cResponse[2] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_HEATER_CURRENT};
   wireWrite(Command, 2, false);
   wireRead(i2cResponse, 1);
   i2cResponse[0] = i2cResponse[0] << 1;
@@ -221,11 +221,11 @@ void hte501I2c::readHeaterCurrent(int &heaterCurrent)
 uint8_t hte501I2c::changeMeasurementResolution(int measResTemp, int measResHum) //8 - 13 Bit
 {
 
-  if (8 <= measResTemp <= 13 && 8 <= measResHum <= 14)
+  if (8 <= measResTemp && measResTemp <= 14 && 8 <= measResHum && measResHum <= 14)
   {
     unsigned char sendByte = ((measResHum - 8) << 3) + (measResTemp - 8);
     unsigned char crc8[] = {0x0F, sendByte};
-    unsigned char Command[] = {0x72, 0xA7, 0x0F, sendByte, calcCrc8(crc8, 0, 1)};
+    unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_MEASUREMENT_RESOLUTION, sendByte, calcCrc8(crc8, 0, 1)};
     wireWrite(Command, 4, true);
     return 0;
   }
@@ -237,8 +237,8 @@ uint8_t hte501I2c::changeMeasurementResolution(int measResTemp, int measResHum) 
 
 void hte501I2c::readMeasurementResolution(int &measResTemp, int &measResHum)
 {
-  unsigned char i2cResponse[2];
-  unsigned char Command[] = {0x72, 0xA7, 0x0F};
+  unsigned char i2cResponse[2] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS >> 8), (HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS & 0xFF), HTE501_REGISTER_MEASUREMENT_RESOLUTION};
   wireWrite(Command, 2, false);
   wireRead(i2cResponse, 1);
   i2cResponse[1] = i2cResponse[0];
@@ -252,32 +252,32 @@ void hte501I2c::readMeasurementResolution(int &measResTemp, int &measResHum)
 
 void hte501I2c::startPeriodicMeasurement(void)
 {
-  unsigned char Command[] = {0x20, 0x1E};
+  unsigned char Command[] = {(HTE501_COMMAND_START_PERIODIC_MEASUREMENT >> 8), (HTE501_COMMAND_START_PERIODIC_MEASUREMENT & 0xFF)};
   wireWrite(Command, 1, true);
 }
 
 void hte501I2c::endPeriodicMeasurement(void)
 {
-  unsigned char Command[] = {0x30, 0x93};
+  unsigned char Command[] = {(HTE501_COMMAND_END_PERIODIC_MEASUREMENT >> 8), (HTE501_COMMAND_END_PERIODIC_MEASUREMENT & 0xFF)};
   wireWrite(Command, 1, true);
 }
 
 void hte501I2c::heaterOn(void)
 {
-  unsigned char Command[] = {0x30, 0x6D};
+  unsigned char Command[] = {(HTE501_COMMAND_HEATER_ON >> 8), (HTE501_COMMAND_HEATER_ON & 0xFF)};
   wireWrite(Command, 1, true);
 }
 
 void hte501I2c::heaterOff(void)
 {
-  unsigned char Command[] = {0x30, 0x66};
+  unsigned char Command[] = {(HTE501_COMMAND_HEATER_OFF >> 8), (HTE501_COMMAND_HEATER_OFF & 0xFF)};
   wireWrite(Command, 1, true);
 }
 
 uint8_t hte501I2c::readIdentification(unsigned char identification[])
 {
-  unsigned char i2cResponse[9];
-  unsigned char Command[] = {0x70, 0x29};
+  unsigned char i2cResponse[9] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_IDENTIFICATION >> 8), (HTE501_COMMAND_READ_IDENTIFICATION & 0xFF)};
   wireWrite(Command, 1, false);
   wireRead(i2cResponse, 9);
   if (i2cResponse[8] == calcCrc8(i2cResponse, 0, 7))
@@ -296,14 +296,14 @@ uint8_t hte501I2c::readIdentification(unsigned char identification[])
 
 void hte501I2c::reset(void)
 {
-  unsigned char Command[] = {0x30, 0xA2};
+  unsigned char Command[] = {(HTE501_COMMAND_SOFT_RESET >> 8), (HTE501_COMMAND_SOFT_RESET & 0xFF)};
   wireWrite(Command, 1, true);
 }
 
 uint8_t hte501I2c::newMeasurementReady(bool &measurement)
 {
-  unsigned char i2cResponse[3];
-  unsigned char Command[] = {0xF3, 0x52};
+  unsigned char i2cResponse[3] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_REGISTER_2 >> 8), (HTE501_COMMAND_READ_REGISTER_2 & 0xFF)};
   wireWrite(Command, 1, false);
   wireRead(i2cResponse, 3);
   if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1))
@@ -319,8 +319,8 @@ uint8_t hte501I2c::newMeasurementReady(bool &measurement)
 
 uint8_t hte501I2c::constantHeaterOnOff(bool &conHeaterOnOff)
 {
-  unsigned char i2cResponse[3];
-  unsigned char Command[] = {0xF3, 0x2D};
+  unsigned char i2cResponse[3] = {};
+  unsigned char Command[] = {(HTE501_COMMAND_READ_REGISTER_1 >> 8), (HTE501_COMMAND_READ_REGISTER_1 & 0xFF)};
   wireWrite(Command, 1, false);
   wireRead(i2cResponse, 3);
   if (i2cResponse[2] == calcCrc8(i2cResponse, 0, 1))
@@ -337,7 +337,7 @@ uint8_t hte501I2c::constantHeaterOnOff(bool &conHeaterOnOff)
 
 void hte501I2c::clearStatusregister1(void)
 {
-  unsigned char Command[] = {0x30, 0x41};
+  unsigned char Command[] = {(HTE501_COMMAND_CLEAR_REGISTER_1 >> 8), (HTE501_COMMAND_CLEAR_REGISTER_1 & 0xFF)};
   wireWrite(Command, 1, true);
 }
 

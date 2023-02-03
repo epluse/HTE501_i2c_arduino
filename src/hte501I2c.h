@@ -30,9 +30,24 @@ We assume no liability for the information contained in this document.
 
 // Defines
 //-----------------------------------------------------------------------------
-#define CRC8_ONEWIRE_POLY 0x31
-#define CRC8_ONEWIRE_START 0xFF
-
+#define CRC8_ONEWIRE_POLY                           0x31
+#define CRC8_ONEWIRE_START                          0xFF
+#define HTE501_COMMAND_READ_SINGLE_SHOT             0x2C1B
+#define HTE501_COMMAND_READ_PERIODIC_MEASUREMENT    0xE000
+#define HTE501_COMMAND_READ_DEW_POINT               0xE016
+#define HTE501_COMMAND_READ_WRITE_SENSOR_SETTINGS   0x72A7
+#define HTE501_COMMAND_CLEAR_REGISTER_1             0x3041
+#define HTE501_COMMAND_READ_REGISTER_1              0xF32D
+#define HTE501_COMMAND_READ_REGISTER_2              0xF352
+#define HTE501_COMMAND_START_PERIODIC_MEASUREMENT   0x201E
+#define HTE501_COMMAND_END_PERIODIC_MEASUREMENT     0x3093
+#define HTE501_COMMAND_SOFT_RESET                   0x30A2
+#define HTE501_COMMAND_HEATER_ON                    0x306D
+#define HTE501_COMMAND_HEATER_OFF                   0x3066
+#define HTE501_COMMAND_READ_IDENTIFICATION          0x7029
+#define HTE501_REGISTER_PERIODIC_MEASUREMENT_TIME   0x10
+#define HTE501_REGISTER_HEATER_CURRENT              0x08
+#define HTE501_REGISTER_MEASUREMENT_RESOLUTION      0x0F
 
 // declaration of functions
 //-----------------------------------------------------------------------------
